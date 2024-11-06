@@ -1,0 +1,146 @@
+﻿@page "/weather"
+@using BlazorCountryApp.Interface
+@using CountryData.Standard
+@using System.Text.Json
+@inject ICountryDataApi CountryDataApi
+
+<PageTitle>Weather</PageTitle>
+
+
+
+<PageTitle>Registration</PageTitle>
+
+<section class="p-3 p-md-4 p-xl-5 ">
+    <div class="container border borde-secondary shadow-lg">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-9 col-lg-7 col-xl-6 col-xxl-5">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-3 p-md-4 p-xl-5">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="mb-5">
+                                    <h2 class="h3">Registration</h2>
+                                    <h3 class="fs-6 fw-normal text-secondary m-0">Enter your details to register</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <form @onsubmit="HandleSubmit">
+                            <div class="row gy-3 overflow-hidden">
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" @bind="firstName" id="firstName" placeholder="First  Name" required>
+                                        <label for="firstName" class="form-label">First Name</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <input type="email" class="form-control" @bind="email" id="email" placeholder="name@example.com" required>
+                                        <label for="email" class="form-label">Email</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <input type="password" class="form-control" @bind="password" id="password" placeholder="Password" required>
+                                        <label for="password" class="form-label">Password</label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <select class="form-control" @bind="selectedCountry" id="country" required>
+                                            <option value="">Select Country</option>
+                                            @if (countries != null)
+                                            {
+                                                foreach (var country in countries)
+                                                {
+                                                    <option value="@country.CountryShortCode"> <span>                                                                               @country.CountryFlag    </span>  @country.CountryName</option>
+                                                }
+                                            }
+                                        </select>
+                                        <label for="country" class="form-label">Country</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 form-floating mb-2">
+                                    <select class="form-control" @bind=" phoneCode" id="country" required>
+                                        <option value="">Select  phoneCode</option>
+                                        @if (countries != null)
+
+                                        {
+
+                                            foreach (var country in countries)
+
+                                            {
+                                                <option value="@country.PhoneCode">
+                                                    <span> @country.CountryShortCode  </span>
+                                                    <span>
+                                                        @country.CountryFlag
+                                                    </span>       @country.PhoneCode
+                                                </option>
+                                            }
+
+                                        }
+                                    </select>
+                                    <label for="country" class="form-label"> Phone Code  </label>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" @bind="iAgree"
+                                               id="iAgree" required>
+                                        <label class="form-check-label text-secondary" for="iAgree">
+                                            I agree to the <a href="#!" class="link-primary text-decoration-none">terms and                                                  conditions</a>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        <button class="btn bsb-btn-2xl btn-primary" type="submit">Sign up</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@code {
+
+    private IEnumerable<Country>? countries;
+
+    private string? firstName;
+    private string? lastName;
+    private string? email;
+    private string? password;
+    private string? selectedCountry;
+    private string? phoneCode;
+    private bool iAgree;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCountries();
+    }
+
+    private async Task LoadCountries()
+    {
+        var jsonString = await CountryDataApi.GetCountryDataAsync();
+        countries = JsonSerializer.Deserialize<IEnumerable<Country>>(jsonString);
+    }
+
+    private async Task HandleSubmit()
+    {
+        // Handle form submission logic here
+    }
+    private async Task OnCountryChanged(ChangeEventArgs e)
+    {
+        selectedCountry = e.Value?.ToString();
+        if (!string.IsNullOrEmpty(selectedCountry))
+        {
+            var jsonString = await CountryDataApi.GetPhoneCodeByCountryShortCodeAsync(selectedCountry);
+            phoneCode = JsonSerializer.Deserialize<string>(jsonString);
+        }
+    }
+}
+
